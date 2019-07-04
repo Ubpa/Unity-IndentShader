@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SnowMat
-  m_Shader: {fileID: 4800000, guid: 007cbcac8eae21e42a490abeb7219558, type: 3}
+  m_Shader: {fileID: 4800000, guid: 936879352dce8ab40b60a12c4daaf01f, type: 3}
   m_ShaderKeywords: _EMISSION _METALLICGLOSSMAP _NORMALMAP _PARALLAXMAP _SPECGLOSSMAP
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0

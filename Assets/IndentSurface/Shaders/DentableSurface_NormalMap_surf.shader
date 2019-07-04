@@ -1,4 +1,4 @@
-﻿Shader "IndentSurface/NormalMapSurface"
+﻿Shader "IndentSurface/DentableSurface_NormalMap_surf"
 {
     Properties
     {

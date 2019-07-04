@@ -6,13 +6,12 @@ namespace Wacki.IndentSurface
 
     public class IndentDraw : MonoBehaviour
     {
-        public Texture2D texture;      
-        public Texture2D stampTexture;  
-        public RenderTexture tempTestRenderTexture;
+        public Texture2D texture;
+        public Texture2D stampTexture;
         public int rtWidth = 512;
         public int rtHeight = 512;
 
-        private RenderTexture targetTexture;
+        public RenderTexture targetTexture;
         private RenderTexture auxTexture;
 
         public Material mat;
@@ -23,22 +22,19 @@ namespace Wacki.IndentSurface
 
         void Awake()
         {
-            targetTexture = new RenderTexture(rtWidth, rtHeight, 32);
-
             // temporarily use a given render texture to be able to see how it looks
-            targetTexture = tempTestRenderTexture;
             auxTexture = new RenderTexture(rtWidth, rtHeight, 32);
 
             GetComponent<Renderer>().material.SetTexture("_Indentmap", targetTexture);
-            Graphics.Blit(texture, targetTexture);  
+            Graphics.Blit(texture, targetTexture);
         }
-        
+
         // add an indentation at a raycast hit position
         public void IndentAt(RaycastHit hit)
         {
-            if (hit.collider.gameObject != this.gameObject)
+            if (!hit.collider || hit.collider.gameObject != this.gameObject)
                 return;
-            
+
             float x = hit.textureCoord.x;
             float y = hit.textureCoord.y;
 
@@ -62,9 +58,9 @@ namespace Wacki.IndentSurface
 
             // force a draw on mouse down
             draw = Input.GetMouseButtonDown(0);
-            // set draggin state
+            // set dragging state
             _mouseDrag = Input.GetMouseButton(0);
-            
+
 
             if (_mouseDrag && (draw || Vector3.Distance(hit.point, _prevMousePosition) > drawThreshold))
             {
@@ -86,7 +82,7 @@ namespace Wacki.IndentSurface
             Graphics.Blit(targetTexture, auxTexture);
 
             // activate our render texture
-            RenderTexture.active = targetTexture; 
+            RenderTexture.active = targetTexture;
 
             GL.PushMatrix();
             GL.LoadPixelMatrix(0, targetTexture.width, targetTexture.height, 0);
@@ -110,15 +106,19 @@ namespace Wacki.IndentSurface
             tempVec.w = screenRect.height / targetTexture.height;
             tempVec.y -= tempVec.w;
 
-            mat.SetTexture("_MainTex", stampTexture);
+            // Graphics.DrawTexture 会设置 _MainTex，以下冗余
+            // mat.SetTexture("_MainTex", stampTexture);
+
+            // 用于将 stamp 纹理坐标映射成 surface texture 纹理坐标
             mat.SetVector("_SourceTexCoords", tempVec);
+
             mat.SetTexture("_SurfaceTex", auxTexture);
 
             // Draw the texture
             Graphics.DrawTexture(screenRect, stampTexture, mat);
 
             GL.PopMatrix();
-            RenderTexture.active = null; 
+            RenderTexture.active = null;
 
 
         }

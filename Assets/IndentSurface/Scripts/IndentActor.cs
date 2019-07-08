@@ -12,7 +12,7 @@ namespace Wacki.IndentSurface
         [Range(0.0f, 0.2f)]
         public float drawDelta = 0.01f;
         private Vector3 _prevDrawPos;
-        
+
         void Update()
         {
             float v = Input.GetAxis("Vertical");
@@ -33,6 +33,8 @@ namespace Wacki.IndentSurface
                 var texDraw = hit.collider.gameObject.GetComponent<IndentDraw>();
                 if (texDraw == null)
                     return;
+
+                texDraw.MoveHeight(transform.position.x, transform.position.z);
 
                 texDraw.IndentAt(hit);
             }

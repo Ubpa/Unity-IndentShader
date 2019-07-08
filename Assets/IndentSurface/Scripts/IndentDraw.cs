@@ -6,27 +6,36 @@ namespace Wacki.IndentSurface
 
     public class IndentDraw : MonoBehaviour
     {
-        public Texture2D texture;
+        public Texture2D initTexture;
         public Texture2D stampTexture;
-        public int rtWidth = 512;
-        public int rtHeight = 512;
+        public int rtWidth = 1024;
+        public int rtHeight = 1024;
+        public float width = 1;
+        public float height = 1;
+        public float stampWidth = 2.0f;
+        public float stampHeight = 2.0f;
 
-        public RenderTexture targetTexture;
+        public RenderTexture RT0;
         private RenderTexture auxTexture;
 
-        public Material mat;
+        public Material moveHeight;
+        public Material drawIndent;
 
         // mouse debug draw
         private Vector3 _prevMousePosition;
         private bool _mouseDrag = false;
+
+        private Vector2 xzPos; 
 
         void Awake()
         {
             // temporarily use a given render texture to be able to see how it looks
             auxTexture = new RenderTexture(rtWidth, rtHeight, 32);
 
-            GetComponent<Renderer>().material.SetTexture("_Indentmap", targetTexture);
-            Graphics.Blit(texture, targetTexture);
+            GetComponent<Renderer>().material.SetTexture("_Indentmap", RT0);
+            Graphics.Blit(initTexture, RT0);
+
+            xzPos.Set(99999, 99999);
         }
 
         // add an indentation at a raycast hit position
@@ -35,10 +44,7 @@ namespace Wacki.IndentSurface
             if (!hit.collider || hit.collider.gameObject != this.gameObject)
                 return;
 
-            float x = hit.textureCoord.x;
-            float y = hit.textureCoord.y;
-
-            DrawAt(x * targetTexture.width, y * targetTexture.height, 1.0f);
+            DrawAt(hit.point.x, hit.point.z, 1.0f);
         }
 
         void Update()
@@ -77,50 +83,74 @@ namespace Wacki.IndentSurface
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="alpha"></param>
-        void DrawAt(float x, float y, float alpha)
+        void DrawAt(float x, float z, float alpha)
         {
-            Graphics.Blit(targetTexture, auxTexture);
+            Graphics.Blit(RT0, auxTexture);
 
             // activate our render texture
-            RenderTexture.active = targetTexture;
+            RenderTexture.active = RT0;
 
             GL.PushMatrix();
-            GL.LoadPixelMatrix(0, targetTexture.width, targetTexture.height, 0);
+            GL.LoadPixelMatrix(0, RT0.width, RT0.height, 0);
 
-            x = Mathf.Round(x);
-            y = Mathf.Round(y);
+            float u = (x - xzPos[0]) / width + 0.5f;
+            float v = (z - xzPos[1]) / height + 0.5f;
 
             // setup rect for our indent texture stamp to draw into
             Rect screenRect = new Rect();
             // put the center of the stamp at the actual draw position
-            screenRect.x = x - stampTexture.width * 0.5f;
-            screenRect.y = (targetTexture.height - y) - stampTexture.height * 0.5f;
-            screenRect.width = stampTexture.width;
-            screenRect.height = stampTexture.height;
+            float drawWidth = stampWidth / width * RT0.width;
+            float drawHeight = stampHeight / height * RT0.height;
+
+            screenRect.x = u * RT0.width - drawWidth * 0.5f;
+            screenRect.y = (RT0.height - v * RT0.height) - drawWidth * 0.5f;
+            //screenRect.y = v * RT0.height - stampTexture.height * 0.5f;
+            screenRect.width = drawWidth;
+            screenRect.height = drawWidth;
 
             var tempVec = new Vector4();
 
-            tempVec.x = screenRect.x / ((float)targetTexture.width);
-            tempVec.y = 1 - (screenRect.y / (float)targetTexture.height);
-            tempVec.z = screenRect.width / targetTexture.width;
-            tempVec.w = screenRect.height / targetTexture.height;
+            tempVec.x = screenRect.x / ((float)RT0.width);
+            tempVec.y = 1 - (screenRect.y / (float)RT0.height);
+            tempVec.z = screenRect.width / RT0.width;
+            tempVec.w = screenRect.height / RT0.height;
             tempVec.y -= tempVec.w;
 
             // Graphics.DrawTexture 会设置 _MainTex，以下冗余
             // mat.SetTexture("_MainTex", stampTexture);
 
             // 用于将 stamp 纹理坐标映射成 surface texture 纹理坐标
-            mat.SetVector("_SourceTexCoords", tempVec);
+            drawIndent.SetVector("_SourceTexCoords", tempVec);
 
-            mat.SetTexture("_SurfaceTex", auxTexture);
+            drawIndent.SetTexture("_SurfaceTex", auxTexture);
 
             // Draw the texture
-            Graphics.DrawTexture(screenRect, stampTexture, mat);
+            Graphics.DrawTexture(screenRect, stampTexture, drawIndent);
 
             GL.PopMatrix();
             RenderTexture.active = null;
+        }
+        
+        public void MoveHeight(float x, float z)
+        {
+            Vector2 cur_xzPos = new Vector2(x, z);
+            Vector2 delta = cur_xzPos - xzPos;
+            if (delta.sqrMagnitude < 0.2 * width * height)
+                return;
 
+            //if (!GetComponent<MeshRenderer>().material.HasProperty("_IndentNormalMapOffset"))
+            //    Debug.Log("not have _IndentNormalMapOffset");
+            GetComponent<MeshRenderer>().material.SetVector("_IndentNormalMapOffset", new Vector4(cur_xzPos[0], cur_xzPos[1], width, height));
 
+            //Debug.Log("delta:" + delta);
+
+            xzPos = cur_xzPos;
+            Vector2 uvOffset = new Vector2(delta.x / width, delta.y / height);
+            moveHeight.SetFloat("_uOffset", uvOffset.x);
+            moveHeight.SetFloat("_vOffset", uvOffset.y);
+            //Debug.Log("uvOffset:" + uvOffset);
+            Graphics.Blit(RT0, auxTexture);
+            Graphics.Blit(auxTexture, RT0, moveHeight);
         }
     }
 

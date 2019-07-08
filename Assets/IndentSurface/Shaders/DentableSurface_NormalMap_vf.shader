@@ -6,6 +6,9 @@
         _BumpMap("Bumpmap", 2D) = "bump" {}
         _IndentNormalMap("Indent Normal Map", 2D) = "bump" {}
         _SpecGlossMap("Specular", 2D) = "white" {}
+
+		// xzwh
+		_IndentNormalMapOffset("IndentNormalMapOffset", Vector) = (0,0,0,0)
     }
     SubShader
     {
@@ -59,6 +62,8 @@
             float4 _IndentNormalMap_ST;
             float4 _SpecGlossMap_ST;
 
+			uniform float4 _IndentNormalMapOffset;
+
             v2f vert (appdata v)
             {
                 v2f o;
@@ -79,7 +84,10 @@
 
                 o.uv_MainTex = TRANSFORM_TEX(v.uv, _MainTex);
                 o.uv_BumpMap = TRANSFORM_TEX(v.uv, _BumpMap);
-                o.uv_IndentNormalMap = TRANSFORM_TEX(v.uv, _IndentNormalMap);
+
+                //o.uv_IndentNormalMap = TRANSFORM_TEX(v.uv, _IndentNormalMap);
+				o.uv_IndentNormalMap = (o.worldPos.xz - _IndentNormalMapOffset.xy) / _IndentNormalMapOffset.zw + 0.5;
+
                 o.uv_SpecGlossMap = TRANSFORM_TEX(v.uv, _SpecGlossMap);
 
                 //UNITY_TRANSFER_FOG(o,o.vertex);
@@ -90,7 +98,12 @@
             {
                 // normal
                 float3 bumpNormal = UnpackNormal(tex2D(_BumpMap, IN.uv_BumpMap)).rgb;
-                float3 indentNormal = UnpackNormal(tex2D(_IndentNormalMap, IN.uv_IndentNormalMap)).rgb;
+
+                //float3 indentNormal = UnpackNormal(tex2D(_IndentNormalMap, IN.uv_IndentNormalMap)).rgb;
+				float3 indentNormal = float3(0, 0, 1);
+				if(IN.uv_IndentNormalMap.x>0 && IN.uv_IndentNormalMap.x<1 && IN.uv_IndentNormalMap.y>0 && IN.uv_IndentNormalMap.y<1)
+					indentNormal = UnpackNormal(tex2D(_IndentNormalMap, IN.uv_IndentNormalMap)).rgb;
+
                 float3 tNormal = normalize(bumpNormal + indentNormal - float3(0, 0, 1));
 
                 float3 worldNormal;
@@ -114,7 +127,7 @@
                 float shiness = 16.0 * gloss;
                 fixed3 specular = Ks * pow(max(0, dot(worldNormal, halfDir)), shiness);
 
-                fixed3 rst = (diffuse + specular) * _LightColor0.rgb;
+                fixed3 rst = 0.2 + (diffuse + specular) * _LightColor0.rgb;
 
                 return fixed4(rst, 1);
             }

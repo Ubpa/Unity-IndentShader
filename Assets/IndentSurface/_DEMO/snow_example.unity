@@ -277,10 +277,10 @@ MonoBehaviour:
   stampTexture: {fileID: 2800000, guid: 346496a7b10ae8d4e9fb5fe51f9e606f, type: 3}
   rtWidth: 1024
   rtHeight: 1024
-  width: 2
-  height: 2
-  stampWidth: 0.3
-  stampHeight: 0.3
+  width: 5
+  height: 5
+  stampWidth: 0.25
+  stampHeight: 0.25
   RT0: {fileID: 8400000, guid: 0c4342ef03b61e64da1efb005c607284, type: 2}
   moveHeight: {fileID: 2100000, guid: f01a38214f4d9864db20bacf0feb69fb, type: 2}
   drawIndent: {fileID: 2100000, guid: 28a97ac2a0b001d4d9a0c876fa978968, type: 2}

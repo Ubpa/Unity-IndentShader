@@ -3,7 +3,10 @@
     Properties
     {
         _MainTex("Albedo (RGB)", 2D) = "white" {}
+
         _BumpMap("Bumpmap", 2D) = "bump" {}
+		_BumpScale("Bump Scale", Float) = 1.0
+
         _IndentNormalMap("Indent Normal Map", 2D) = "bump" {}
         _SpecGlossMap("Specular", 2D) = "white" {}
 
@@ -12,19 +15,22 @@
     }
     SubShader
     {
-        Tags { "RenderType"="ForwardBase" }
+		Tags { "RenderType" = "Opaque" "Queue" = "Geometry"}
         LOD 100
 
         Pass
         {
+			Tags { "LightMode" = "ForwardBase" }
+
             CGPROGRAM
+
+			#pragma multi_compile_fwdbase
+
             #pragma vertex vert
             #pragma fragment frag
-            // make fog work
-            //#pragma multi_compile_fog
 
-            #include "UnityCG.cginc"
-            #include "Lighting.cginc"
+			#include "Lighting.cginc"
+			#include "AutoLight.cginc"
 
             struct appdata
             {
@@ -48,8 +54,9 @@
                 float2 uv_IndentNormalMap : TEXCOORD6;
                 float2 uv_SpecGlossMap : TEXCOORD7;
 
-                //UNITY_FOG_COORDS(1)
                 float4 pos : SV_POSITION;
+
+				SHADOW_COORDS(8)
             };
 
             sampler2D _MainTex;
@@ -63,6 +70,7 @@
             float4 _SpecGlossMap_ST;
 
 			uniform float4 _IndentNormalMapOffset;
+			float _BumpScale;
 
             v2f vert (appdata v)
             {
@@ -85,12 +93,12 @@
                 o.uv_MainTex = TRANSFORM_TEX(v.uv, _MainTex);
                 o.uv_BumpMap = TRANSFORM_TEX(v.uv, _BumpMap);
 
-                //o.uv_IndentNormalMap = TRANSFORM_TEX(v.uv, _IndentNormalMap);
 				o.uv_IndentNormalMap = (o.worldPos.xz - _IndentNormalMapOffset.xy) / _IndentNormalMapOffset.zw + 0.5;
 
                 o.uv_SpecGlossMap = TRANSFORM_TEX(v.uv, _SpecGlossMap);
 
-                //UNITY_TRANSFER_FOG(o,o.vertex);
+				TRANSFER_SHADOW(o);
+
                 return o;
             }
 
@@ -98,8 +106,8 @@
             {
                 // normal
                 float3 bumpNormal = UnpackNormal(tex2D(_BumpMap, IN.uv_BumpMap)).rgb;
+				bumpNormal = normalize(float3(_BumpScale * bumpNormal.xy, bumpNormal.z));
 
-                //float3 indentNormal = UnpackNormal(tex2D(_IndentNormalMap, IN.uv_IndentNormalMap)).rgb;
 				float3 indentNormal = float3(0, 0, 1);
 				if(IN.uv_IndentNormalMap.x>0 && IN.uv_IndentNormalMap.x<1 && IN.uv_IndentNormalMap.y>0 && IN.uv_IndentNormalMap.y<1)
 					indentNormal = UnpackNormal(tex2D(_IndentNormalMap, IN.uv_IndentNormalMap)).rgb;
@@ -111,23 +119,27 @@
                 worldNormal.y = dot(IN.tspace1, tNormal);
                 worldNormal.z = dot(IN.tspace2, tNormal);
                 worldNormal = normalize(worldNormal);
+
+				fixed3 lightDir = normalize(UnityWorldSpaceLightDir(IN.worldPos));
+				fixed3 viewDir = normalize(UnityWorldSpaceViewDir(IN.worldPos));
                 
                 // Lambertian diffuse
-                float3 lightDir = normalize(_WorldSpaceLightPos0.xyz - IN.worldPos);
                 float cosTheta = max(0, dot(worldNormal, lightDir));
                 float3 albedo = tex2D(_MainTex, IN.uv_MainTex).rgb;
                 fixed3 diffuse = albedo * cosTheta;
 
                 // Bline-Phong specular
-                float3 viewDir = normalize(UnityWorldSpaceViewDir(IN.worldPos));
                 float3 halfDir = normalize(viewDir + lightDir);
                 float4 KsGloss = tex2D(_SpecGlossMap, IN.uv_SpecGlossMap);
                 float3 Ks = KsGloss.rgb;
                 float gloss = KsGloss.a;
-                float shiness = 16.0 * gloss;
+                float shiness = 32.0 * gloss;
                 fixed3 specular = Ks * pow(max(0, dot(worldNormal, halfDir)), shiness);
 
-                fixed3 rst = 0.2 + (diffuse + specular) * _LightColor0.rgb;
+				// ambient
+				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz * albedo;
+
+				fixed3 rst = ambient + (diffuse + specular) * _LightColor0.rgb;
 
                 return fixed4(rst, 1);
             }

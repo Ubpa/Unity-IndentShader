@@ -98,15 +98,14 @@ namespace Wacki.IndentSurface
 
             // setup rect for our indent texture stamp to draw into
             Rect screenRect = new Rect();
-            // put the center of the stamp at the actual draw position
             float drawWidth = stampWidth / width * RT0.width;
             float drawHeight = stampHeight / height * RT0.height;
 
+            // put the center of the stamp at the actual draw position
             screenRect.x = u * RT0.width - drawWidth * 0.5f;
             screenRect.y = (RT0.height - v * RT0.height) - drawWidth * 0.5f;
-            //screenRect.y = v * RT0.height - stampTexture.height * 0.5f;
             screenRect.width = drawWidth;
-            screenRect.height = drawWidth;
+            screenRect.height = drawHeight;
 
             var tempVec = new Vector4();
 
@@ -115,9 +114,6 @@ namespace Wacki.IndentSurface
             tempVec.z = screenRect.width / RT0.width;
             tempVec.w = screenRect.height / RT0.height;
             tempVec.y -= tempVec.w;
-
-            // Graphics.DrawTexture 会设置 _MainTex，以下冗余
-            // mat.SetTexture("_MainTex", stampTexture);
 
             // 用于将 stamp 纹理坐标映射成 surface texture 纹理坐标
             drawIndent.SetVector("_SourceTexCoords", tempVec);
@@ -131,9 +127,9 @@ namespace Wacki.IndentSurface
             RenderTexture.active = null;
         }
         
-        public void MoveHeight(float x, float z)
+        public void MoveHeightMap(Vector3 pos)
         {
-            Vector2 cur_xzPos = new Vector2(x, z);
+            Vector2 cur_xzPos = new Vector2(pos.x, pos.z);
             Vector2 delta = cur_xzPos - xzPos;
             if (delta.sqrMagnitude < 0.2 * width * height)
                 return;

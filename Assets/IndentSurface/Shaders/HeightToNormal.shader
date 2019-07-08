@@ -63,22 +63,22 @@ Shader "IndentSurface/HeightToNormal"
 				float2 brv = float2(vUv.x + step.x, vUv.y - step.y);
 
 				// 边界处理
-				tlv = float2(tlv.x >= 0.0 ? tlv.x : (1.0 + tlv.x), 	tlv.y >= 0.0 ? tlv.y : (1.0 + tlv.y));
-				tlv = float2(tlv.x < 1.0 ? tlv.x : (tlv.x - 1.0), 	tlv.y < 1.0 ? tlv.y : (tlv.y - 1.0));
-				lv = float2(lv.x >= 0.0 ? lv.x : (1.0 + lv.x),  	lv.y >= 0.0 ? lv.y : (1.0 + lv.y));
-				lv = float2(lv.x < 1.0 ? lv.x : (lv.x - 1.0),   lv.y < 1.0 ? lv.y : (lv.y - 1.0));
-				blv = float2(blv.x >= 0.0 ? blv.x : (1.0 + blv.x), 	blv.y >= 0.0 ? blv.y : (1.0 + blv.y));
-				blv = float2(blv.x < 1.0 ? blv.x : (blv.x - 1.0), 	blv.y < 1.0 ? blv.y : (blv.y - 1.0));
-				tv = float2(tv.x >= 0.0 ? tv.x : (1.0 + tv.x),  	tv.y >= 0.0 ? tv.y : (1.0 + tv.y));
-				tv = float2(tv.x < 1.0 ? tv.x : (tv.x - 1.0),   tv.y < 1.0 ? tv.y : (tv.y - 1.0));
-				bv = float2(bv.x >= 0.0 ? bv.x : (1.0 + bv.x),  	bv.y >= 0.0 ? bv.y : (1.0 + bv.y));
-				bv = float2(bv.x < 1.0 ? bv.x : (bv.x - 1.0),   bv.y < 1.0 ? bv.y : (bv.y - 1.0));
-				trv = float2(trv.x >= 0.0 ? trv.x : (1.0 + trv.x), 	trv.y >= 0.0 ? trv.y : (1.0 + trv.y));
-				trv = float2(trv.x < 1.0 ? trv.x : (trv.x - 1.0), 	trv.y < 1.0 ? trv.y : (trv.y - 1.0));
-				rv = float2(rv.x >= 0.0 ? rv.x : (1.0 + rv.x),  	rv.y >= 0.0 ? rv.y : (1.0 + rv.y));
-				rv = float2(rv.x < 1.0 ? rv.x : (rv.x - 1.0),   rv.y < 1.0 ? rv.y : (rv.y - 1.0));
-				brv = float2(brv.x >= 0.0 ? brv.x : (1.0 + brv.x), 	brv.y >= 0.0 ? brv.y : (1.0 + brv.y));
-				brv = float2(brv.x < 1.0 ? brv.x : (brv.x - 1.0), 	brv.y < 1.0 ? brv.y : (brv.y - 1.0));
+//				tlv = float2(tlv.x >= 0.0 ? tlv.x : (1.0 + tlv.x), 	tlv.y >= 0.0 ? tlv.y : (1.0 + tlv.y));
+//				tlv = float2(tlv.x < 1.0 ? tlv.x : (tlv.x - 1.0), 	tlv.y < 1.0 ? tlv.y : (tlv.y - 1.0));
+//				lv = float2(lv.x >= 0.0 ? lv.x : (1.0 + lv.x),  	lv.y >= 0.0 ? lv.y : (1.0 + lv.y));
+//				lv = float2(lv.x < 1.0 ? lv.x : (lv.x - 1.0),   lv.y < 1.0 ? lv.y : (lv.y - 1.0));
+//				blv = float2(blv.x >= 0.0 ? blv.x : (1.0 + blv.x), 	blv.y >= 0.0 ? blv.y : (1.0 + blv.y));
+//				blv = float2(blv.x < 1.0 ? blv.x : (blv.x - 1.0), 	blv.y < 1.0 ? blv.y : (blv.y - 1.0));
+//				tv = float2(tv.x >= 0.0 ? tv.x : (1.0 + tv.x),  	tv.y >= 0.0 ? tv.y : (1.0 + tv.y));
+//				tv = float2(tv.x < 1.0 ? tv.x : (tv.x - 1.0),   tv.y < 1.0 ? tv.y : (tv.y - 1.0));
+//				bv = float2(bv.x >= 0.0 ? bv.x : (1.0 + bv.x),  	bv.y >= 0.0 ? bv.y : (1.0 + bv.y));
+//				bv = float2(bv.x < 1.0 ? bv.x : (bv.x - 1.0),   bv.y < 1.0 ? bv.y : (bv.y - 1.0));
+//				trv = float2(trv.x >= 0.0 ? trv.x : (1.0 + trv.x), 	trv.y >= 0.0 ? trv.y : (1.0 + trv.y));
+//				trv = float2(trv.x < 1.0 ? trv.x : (trv.x - 1.0), 	trv.y < 1.0 ? trv.y : (trv.y - 1.0));
+//				rv = float2(rv.x >= 0.0 ? rv.x : (1.0 + rv.x),  	rv.y >= 0.0 ? rv.y : (1.0 + rv.y));
+//				rv = float2(rv.x < 1.0 ? rv.x : (rv.x - 1.0),   rv.y < 1.0 ? rv.y : (rv.y - 1.0));
+//				brv = float2(brv.x >= 0.0 ? brv.x : (1.0 + brv.x), 	brv.y >= 0.0 ? brv.y : (1.0 + brv.y));
+//				brv = float2(brv.x < 1.0 ? brv.x : (brv.x - 1.0), 	brv.y < 1.0 ? brv.y : (brv.y - 1.0));
 
 				// 采样
 				float tl = abs(tex2D(_MainTex, tlv).r);

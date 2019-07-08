@@ -36,9 +36,6 @@
 				{
 					v2f o;
 
-					//UNITY_SETUP_INSTANCE_ID(v);// ?
-					//UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);// ?
-
 					o.pos = UnityObjectToClipPos(v.pos);
 					o.surfUV = v.uv + float2(_uOffset, _vOffset), _MainTex;
 					return o;

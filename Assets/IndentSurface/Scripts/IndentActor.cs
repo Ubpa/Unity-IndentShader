@@ -34,7 +34,7 @@ namespace Wacki.IndentSurface
                 if (texDraw == null)
                     return;
 
-                texDraw.MoveHeight(transform.position.x, transform.position.z);
+                texDraw.MoveHeightMap(transform.position);
 
                 texDraw.IndentAt(hit);
             }

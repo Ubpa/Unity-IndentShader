@@ -2,12 +2,14 @@
 
 Shader "IndentSurface/HeightToNormal"
 {
-    Properties
-    {
-        _MainTex ("Texture", 2D) = "white" {}
+	Properties
+	{
+		_MainTex("Texture", 2D) = "white" {}
 		_InvWidth("Inv Width", Float) = 0.0039
 		_InvHeight("Inv Height", Float) = 0.0039
-		_dz("dz", Range(0.01, 20.00)) = 1.00
+		_Strength("Strength", Range(0.01,5.0)) = 2.5
+		_Level("Level", Range(0,10)) = 5
+		//_dz("dz", Range(0.01, 20.00)) = 1.00
 	}
 		SubShader
 		{
@@ -22,33 +24,35 @@ Shader "IndentSurface/HeightToNormal"
 
 				#include "UnityCG.cginc"
 
-            struct appdata
-            {
-                float4 vertex : POSITION;
-                float2 uv : TEXCOORD0;
-            };
+			struct appdata
+			{
+				float4 vertex : POSITION;
+				float2 uv : TEXCOORD0;
+			};
 
-            struct v2f
-            {
-                float2 uv : TEXCOORD0;
-                float4 vertex : SV_POSITION;
-            };
+			struct v2f
+			{
+				float2 uv : TEXCOORD0;
+				float4 vertex : SV_POSITION;
+			};
 
-            v2f vert (appdata v)
-            {
-                v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = v.uv;
-                return o;
-            }
+			v2f vert(appdata v)
+			{
+				v2f o;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.uv = v.uv;
+				return o;
+			}
 
-            sampler2D _MainTex;
+			sampler2D _MainTex;
 			uniform float _InvWidth;
 			uniform float _InvHeight;
-			uniform float _dz;
+			uniform float _Strength;
+			uniform float _Level;
+			//uniform float _dz;
 
-            fixed4 frag (v2f IN) : SV_Target
-            {
+			fixed4 frag(v2f IN) : SV_Target
+			{
 				float2 step = float2(_InvWidth, _InvHeight);
 				float2 vUv = IN.uv;
 
@@ -92,19 +96,22 @@ Shader "IndentSurface/HeightToNormal"
 
 				float dx = 0.0, dy = 0.0;
 
+				float dz = 1.0 / _Strength * (1.0 + exp2(_Level));
+
 				// Sobel
 				dx = tl + l * 2.0 + bl - tr - r * 2.0 - br;
+				dx = -dx;
 				dy = tl + t * 2.0 + tr - bl - b * 2.0 - br;
-				
+
 				// Scharr
 				// dx = tl * 3.0 + l * 10.0 + bl * 3.0 - tr * 3.0 - r * 10.0 - br * 3.0;
 				// dy = tl * 3.0 + t * 10.0 + tr * 3.0 - bl * 3.0 - b * 10.0 - br * 3.0;
 
-				float4 normal = float4(normalize(float3(dx, dy, _dz)), tex2D(_MainTex, vUv).a);
+				float4 normal = float4(normalize(float3(dx, dy, dz)), tex2D(_MainTex, vUv).a);
 
 				return fixed4(normal.xy * 0.5 + 0.5, normal.zw);
-            }
-            ENDCG
-        }
-    }
+			}
+			ENDCG
+		}
+		}
 }

@@ -5,13 +5,14 @@
         _MainTex("Albedo (RGB)", 2D) = "white" {}
 
         _BumpMap("Bumpmap", 2D) = "bump" {}
-		_BumpScale("Bump Scale", Float) = 1.0
 
         _IndentNormalMap("Indent Normal Map", 2D) = "bump" {}
         _SpecGlossMap("Specular", 2D) = "white" {}
 
 		// xzwh
 		_IndentNormalMapOffset("IndentNormalMapOffset", Vector) = (0,0,0,0)
+		
+		_BumpScale("Bump Scale", Float) = 1.0
     }
     SubShader
     {
@@ -29,6 +30,7 @@
             #pragma vertex vert
             #pragma fragment frag
 
+			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
 
@@ -55,8 +57,6 @@
                 float2 uv_SpecGlossMap : TEXCOORD7;
 
                 float4 pos : SV_POSITION;
-
-				SHADOW_COORDS(8)
             };
 
             sampler2D _MainTex;
@@ -97,8 +97,6 @@
 
                 o.uv_SpecGlossMap = TRANSFORM_TEX(v.uv, _SpecGlossMap);
 
-				TRANSFER_SHADOW(o);
-
                 return o;
             }
 
@@ -106,13 +104,15 @@
             {
                 // normal
                 float3 bumpNormal = UnpackNormal(tex2D(_BumpMap, IN.uv_BumpMap)).rgb;
-				bumpNormal = normalize(float3(_BumpScale * bumpNormal.xy, bumpNormal.z));
+				//bumpNormal = normalize(float3(_BumpScale * bumpNormal.xy, bumpNormal.z));
 
 				float3 indentNormal = float3(0, 0, 1);
 				if(IN.uv_IndentNormalMap.x>0 && IN.uv_IndentNormalMap.x<1 && IN.uv_IndentNormalMap.y>0 && IN.uv_IndentNormalMap.y<1)
 					indentNormal = UnpackNormal(tex2D(_IndentNormalMap, IN.uv_IndentNormalMap)).rgb;
 
                 float3 tNormal = normalize(bumpNormal + indentNormal - float3(0, 0, 1));
+				tNormal.xy *= _BumpScale;
+				tNormal = normalize(tNormal);
 
                 float3 worldNormal;
                 worldNormal.x = dot(IN.tspace0, tNormal);

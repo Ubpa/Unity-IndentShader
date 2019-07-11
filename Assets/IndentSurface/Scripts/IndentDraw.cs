@@ -82,9 +82,9 @@ namespace Wacki.IndentSurface
                 uvs.Add(new Vector2(1, 0));
             }
 
-            indentCam.GetComponent<CamPostRender>().AddTask(() =>
+            indentCam.GetComponent<CamPostRender>().AddTask((RenderTexture rst) =>
             {
-                Graphics.Blit(heightMap, normalMap, heightToNormal);
+                Graphics.Blit(rst, normalMap, heightToNormal);
             });
         }
 
@@ -305,7 +305,6 @@ namespace Wacki.IndentSurface
             Vector3 newCamPos = new Vector3(pos.x, maxY + 1,pos.z);
             if (Vector3.Distance(indentCam.transform.position, newCamPos) < 0.1 * Mathf.Sqrt(width * height))
                 return;
-            //UnityEditor.EditorApplication.isPaused = true;
             indentCam.transform.position = newCamPos;
 
             GetComponent<MeshRenderer>().material.SetVector("_IndentNormalMapOffset",

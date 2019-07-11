@@ -4,21 +4,21 @@ using UnityEngine;
 
 public class CamPostRender : MonoBehaviour
 {
-    private List<System.Action> postRenderTasks;
-
-    private void OnPostRender()
+    private List<System.Action<RenderTexture>> useRstActions;
+    private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        foreach (System.Action action in postRenderTasks)
+        foreach (var action in useRstActions)
         {
-            action();
+            action(source);
         }
+        Graphics.Blit(source, destination);
     }
 
-    public void AddTask(System.Action action)
+    public void AddTask(System.Action<RenderTexture> action)
     {
-        if (postRenderTasks == null)
-            postRenderTasks = new List<System.Action>();
+        if (useRstActions == null)
+            useRstActions = new List<System.Action<RenderTexture>>();
 
-        postRenderTasks.Add(action);
+        useRstActions.Add(action);
     }
 }

@@ -5,8 +5,8 @@ Shader "IndentSurface/HeightToNormal"
 	Properties
 	{
 		_MainTex("Texture", 2D) = "white" {}
-		_InvWidth("Inv Width", Float) = 0.0039
-		_InvHeight("Inv Height", Float) = 0.0039
+		_Width("Width", Float) = 1
+		_Height("Height", Float) = 1
 		_Strength("Strength", Range(0.01,5.0)) = 2.5
 		_Level("Level", Range(0,10)) = 5
 		//_dz("dz", Range(0.01, 20.00)) = 1.00
@@ -45,15 +45,15 @@ Shader "IndentSurface/HeightToNormal"
 			}
 
 			sampler2D _MainTex;
-			uniform float _InvWidth;
-			uniform float _InvHeight;
+			uniform float _Width;
+			uniform float _Height;
 			uniform float _Strength;
 			uniform float _Level;
 			//uniform float _dz;
 
 			fixed4 frag(v2f IN) : SV_Target
 			{
-				float2 step = float2(_InvWidth, _InvHeight);
+				float2 step = float2(1/_Width, 1/_Height);
 				float2 vUv = IN.uv;
 
 				// 纹理坐标

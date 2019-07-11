@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace Wacki.IndentSurface
 {
@@ -7,10 +8,10 @@ namespace Wacki.IndentSurface
     public class IndentDraw : MonoBehaviour
     {
         public Texture2D stampTexture;
-        public int rtWidth = 1024;
-        public int rtHeight = 1024;
-        public float width = 1;
-        public float height = 1;
+        public int rtWidth = 512;
+        public int rtHeight = 512;
+        public float width = 20;
+        public float height = 20;
         public float stampSize = 2.0f;
 
         public RenderTexture heightMap;
@@ -31,6 +32,18 @@ namespace Wacki.IndentSurface
 
         public GameObject indentCam;
 
+        public GameObject[] actors;
+        struct TraceInfo
+        {
+            public int preIdx;
+            public Vector3 prePos;
+        }
+        private Dictionary<GameObject, TraceInfo> infoMap;
+        private List<Vector3> verts;
+        private List<Vector2> uvs;
+        private List<int> idxs;
+        private Mesh batchedMesh;
+
         void Awake()
         {
             // temporarily use a given render texture to be able to see how it looks
@@ -44,11 +57,52 @@ namespace Wacki.IndentSurface
             {
                 indentCam.GetComponent<Camera>().targetTexture = heightMap;
                 indentCam.transform.rotation = Quaternion.LookRotation(new Vector3(0, -1, 0));
-                indentCam.GetComponent<Camera>().projectionMatrix = Matrix4x4.Ortho(-width / 2, width / 2, -height / 2, height / 2, 0.1f, 30.0f);
             }
+
+            batchedMesh = new Mesh();
+            infoMap = new Dictionary<GameObject, TraceInfo>();
+            verts = new List<Vector3>();
+            uvs = new List<Vector2>();
+            idxs = new List<int>();
+
+            for (int i = 0; i < actors.Length; i++)
+            {
+                TraceInfo info = new TraceInfo();
+                info.preIdx = 2 * i;
+
+                Vector3 pos = actors[i].transform.position;
+                info.prePos = pos;
+                
+                infoMap.Add(actors[i], info);
+
+                Vector3 rightDir = new Vector3(1, 0, 0);
+                verts.Add(pos - stampSize / 2 * rightDir);
+                verts.Add(pos + stampSize / 2 * rightDir);
+                uvs.Add(new Vector2(0, 0));
+                uvs.Add(new Vector2(1, 0));
+            }
+
+            indentCam.GetComponent<CamPostRender>().AddTask(() =>
+            {
+                Graphics.Blit(heightMap, normalMap, heightToNormal);
+            });
         }
 
         void Update()
+        {
+            indentCam.GetComponent<Camera>().projectionMatrix = Matrix4x4.Ortho(-width / 2, width / 2, -height / 2, height / 2, 0.1f, 30.0f);
+            GetComponent<MeshRenderer>().material.SetVector("_IndentNormalMapOffset",
+                new Vector4(indentCam.transform.position.x, indentCam.transform.position.z, width, height));
+            heightToNormal.SetFloat("_Width", rtWidth);
+            heightToNormal.SetFloat("_Height", rtHeight);
+
+            UpdateCameraPos();
+            UpdateMesh();
+
+            Graphics.DrawMesh(batchedMesh, Matrix4x4.identity, drawMeshIndent, LayerMask.NameToLayer("snowMesh"), indentCam.GetComponent<Camera>());
+        } 
+
+        private void DrawByMouse()
         {
             if (Camera.main == null)
                 return;
@@ -74,11 +128,6 @@ namespace Wacki.IndentSurface
                 _prevMousePosition = hit.point;
                 DrawAt(hit.point);
             }
-        }
-
-        private void LateUpdate()
-        {
-            Graphics.Blit(heightMap, normalMap, heightToNormal);
         }
 
         public void DrawAt(Vector3 pos)
@@ -237,6 +286,72 @@ namespace Wacki.IndentSurface
             moveHeight.SetFloat("_vOffset", uvOffset.y);
             Graphics.Blit(heightMap, auxTexture);
             Graphics.Blit(auxTexture, heightMap, moveHeight);
+        }
+
+        private void UpdateCameraPos()
+        {
+            if (actors.Length == 0)
+                return;
+
+            Vector3 pos = new Vector3(0,0,0);
+            float maxY = float.MinValue;
+            foreach (GameObject actor in actors)
+            {
+                pos += actor.transform.position;
+                maxY = Mathf.Max(maxY, actor.transform.position.y);
+            }
+
+            pos /= actors.Length;
+            Vector3 newCamPos = new Vector3(pos.x, maxY + 1,pos.z);
+            if (Vector3.Distance(indentCam.transform.position, newCamPos) < 0.1 * Mathf.Sqrt(width * height))
+                return;
+            //UnityEditor.EditorApplication.isPaused = true;
+            indentCam.transform.position = newCamPos;
+
+            GetComponent<MeshRenderer>().material.SetVector("_IndentNormalMapOffset",
+                new Vector4(newCamPos.x, newCamPos.z, width, height));
+        }
+
+        private void UpdateMesh()
+        {
+            foreach (GameObject actor in actors)
+            {
+                var info = infoMap[actor];
+                Vector3 p0 = info.prePos;
+                Vector3 p1 = actor.transform.position;
+
+                if (Vector3.Distance(p0, p1) < 0.01)
+                    continue;
+
+                Vector3 front = (p1 - p0).normalized;
+                Vector3 normal = new Vector3(0, 1, 0); // default
+                Vector3 right = Vector3.Cross(normal,front);
+                
+                int curIdx = verts.Count;
+
+                verts.Add(p1 - stampSize / 2 * right);
+                verts.Add(p1 + stampSize / 2 * right);
+
+                uvs.Add(new Vector2(0, 0.5f));
+                uvs.Add(new Vector2(1, 0.5f));
+
+                // 2  3
+                // 0  1
+                int[] newIdxs = {
+                    info.preIdx, info.preIdx + 1, curIdx,
+                    curIdx + 1, curIdx, info.preIdx + 1
+                };
+                idxs.AddRange(newIdxs);
+
+                info.preIdx = curIdx;
+                info.prePos = p1;
+
+                infoMap[actor] = info;
+            }
+
+            batchedMesh.SetVertices(verts);
+            batchedMesh.SetUVs(0, uvs);
+            batchedMesh.SetIndices(idxs.ToArray(), MeshTopology.Triangles, 0);
         }
     }
 

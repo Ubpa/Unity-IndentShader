@@ -104,7 +104,6 @@
             {
                 // normal
                 float3 bumpNormal = UnpackNormal(tex2D(_BumpMap, IN.uv_BumpMap)).rgb;
-				//bumpNormal = normalize(float3(_BumpScale * bumpNormal.xy, bumpNormal.z));
 
 				float3 indentNormal = float3(0, 0, 1);
 				if(IN.uv_IndentNormalMap.x>0 && IN.uv_IndentNormalMap.x<1 && IN.uv_IndentNormalMap.y>0 && IN.uv_IndentNormalMap.y<1)

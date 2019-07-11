@@ -29,14 +29,14 @@ namespace Wacki.IndentSurface
 
             GetComponent<Rigidbody>().AddForce(h, 0, v);
 
-            snowGround.GetComponent<IndentDraw>().MoveHeightMap(transform.position);
+            //snowGround.GetComponent<IndentDraw>().MoveHeightMap(transform.position);
 
-            if ((transform.position - _prevDrawPos).magnitude < drawDelta)
-                return;
+            //if ((transform.position - _prevDrawPos).magnitude < drawDelta)
+            //    return;
 
             //snowGround.GetComponent<IndentDraw>().DrawLine(_prevDrawPos, transform.position);
-            snowGround.GetComponent<IndentDraw>().DrawRectMesh(_prevDrawPos, transform.position, new Vector3(0,1,0));
-            _prevDrawPos = transform.position;
+            //snowGround.GetComponent<IndentDraw>().DrawRectMesh(_prevDrawPos, transform.position, new Vector3(0,1,0));
+            //_prevDrawPos = transform.position;
         }
     }
 

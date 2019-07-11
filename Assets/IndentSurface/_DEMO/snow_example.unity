@@ -255,11 +255,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stampTexture: {fileID: 2800000, guid: 346496a7b10ae8d4e9fb5fe51f9e606f, type: 3}
-  rtWidth: 1024
-  rtHeight: 1024
-  width: 5
-  height: 5
-  stampSize: 0.05
+  rtWidth: 512
+  rtHeight: 512
+  width: 1
+  height: 1
+  stampSize: 0.01
   heightMap: {fileID: 8400000, guid: 0c4342ef03b61e64da1efb005c607284, type: 2}
   normalMap: {fileID: 8400000, guid: c245d66d81fe65e4c98579a16b36f605, type: 2}
   heightToNormal: {fileID: 2100000, guid: 74d63a753fcc9c74791cba4e2e8e11f9, type: 2}
@@ -268,6 +268,8 @@ MonoBehaviour:
   drawLineIndent: {fileID: 2100000, guid: 591bedc1931f1f043b7afb86eb6e0364, type: 2}
   drawMeshIndent: {fileID: 2100000, guid: 8cbd291101fba6f4db58f8cc7296c66d, type: 2}
   indentCam: {fileID: 1351254485}
+  actors:
+  - {fileID: 40304958}
 --- !u!4 &178602651 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: bc86af40b0c04ce49932d3e85f066403,
@@ -748,6 +750,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1351254488}
   - component: {fileID: 1351254487}
+  - component: {fileID: 1351254489}
   - component: {fileID: 1351254486}
   m_Layer: 0
   m_Name: Camera
@@ -773,7 +776,7 @@ Camera:
   m_GameObject: {fileID: 1351254485}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 4
+  m_ClearFlags: 2
   m_BackGroundColor: {r: 1, g: 1, b: 1, a: 1}
   m_projectionMatrixMode: 1
   m_SensorSize: {x: 36, y: 24}
@@ -820,6 +823,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1351254489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1351254485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d22284f571911d47af248ea381681f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1576694679
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -26,17 +26,9 @@ namespace Wacki.IndentSurface
         {
             float v = speed * Input.GetAxis("Vertical");
             float h = speed * Input.GetAxis("Horizontal");
+            var F = transform.forward * v +transform.right * h;
 
-            GetComponent<Rigidbody>().AddForce(h, 0, v);
-
-            //snowGround.GetComponent<IndentDraw>().MoveHeightMap(transform.position);
-
-            //if ((transform.position - _prevDrawPos).magnitude < drawDelta)
-            //    return;
-
-            //snowGround.GetComponent<IndentDraw>().DrawLine(_prevDrawPos, transform.position);
-            //snowGround.GetComponent<IndentDraw>().DrawRectMesh(_prevDrawPos, transform.position, new Vector3(0,1,0));
-            //_prevDrawPos = transform.position;
+            GetComponent<Rigidbody>().AddForce(F);
         }
     }
 

@@ -63,6 +63,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _Height: 512
     - _InvHeight: 0.0039
     - _InvWidth: 0.0039
     - _Level: 2.16
@@ -75,6 +76,7 @@ Material:
     - _SrcBlend: 1
     - _Strength: 5
     - _UVSec: 0
+    - _Width: 512
     - _ZWrite: 1
     - _dz: 0.6
     m_Colors:

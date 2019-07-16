@@ -1,4 +1,4 @@
-﻿Shader "IndentSurface/DentableSurface_SSN"
+﻿Shader "IndentSurface/SnowTrace"
 {
 	Properties
 	{

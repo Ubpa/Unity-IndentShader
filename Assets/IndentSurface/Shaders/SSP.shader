@@ -19,9 +19,7 @@
 
 				#include "UnityCG.cginc"
 
-				uniform sampler2D _MainTex;
-				uniform sampler2D _SurfaceTex;
-				uniform float4 _SourceTexCoords;
+				uniform sampler2D _StampTex;
 				uniform float _Scale;
 				uniform float _HeightOffset;
 
@@ -50,10 +48,10 @@
 
 				float4 frag(v2f i) : SV_Target
 				{
-					float4 stamp = tex2D(_MainTex, i.uv_stamp);
+					float4 stamp = tex2D(_StampTex, i.uv_stamp);
 					float offset = (stamp.r - _HeightOffset) * _Scale * stamp.a;
 					float3 worldPos = i.worldPos + normalize(i.normal) * offset;
-					return float4(worldPos, 1);
+					return float4(worldPos, 1); // 1 : valid, 0 : invalid
 				}
 				ENDCG
 			}

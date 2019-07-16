@@ -6,11 +6,6 @@ public class CameraCopy : MonoBehaviour
 {
     public Camera mainCam;
 
-    private void Awake()
-    {
-        GetComponent<Camera>().depthTextureMode |= DepthTextureMode.Depth;
-    }
-
     private void Update()
     {
         transform.position = mainCam.transform.position;

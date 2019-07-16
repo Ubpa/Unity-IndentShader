@@ -4,22 +4,20 @@ using System.Collections.Generic;
 
 namespace IndentSurface
 {
-
-    public class IndentDraw : MonoBehaviour
+    public class SnowTraceCtrl : MonoBehaviour
     {
         public float stampSize = 0.1f;
 
         public Texture2D stampTexture;
-        public RenderTexture heightMap;
-        public RenderTexture normalMap;
+        public RenderTexture rtWorldPos;
+        public RenderTexture rtWorldNormal;
 
-        public Material SSH2N;
-        public Material SSH;
-
-        public Camera heightCamera;
-        public Camera heightToNormalCamera;
+        public Material SSP2N; // screnn space postion to normal
+        public Material SSP; // screen space position
 
         public GameObject[] actors;
+
+        // mesh
         struct TraceInfo
         {
             public int preIdx;
@@ -32,11 +30,23 @@ namespace IndentSurface
         private List<int> idxs;
         private Mesh batchedMesh;
 
+        // camera
+        private Camera posCamera;
+        private Camera posToNormalCamera;
+
         void Awake()
         {
-            heightCamera.targetTexture = heightMap;
-            heightToNormalCamera.targetTexture = normalMap;
+            // init camera
+            posCamera = GenCamera("Position Camera");
+            posToNormalCamera = GenCamera("Position To Normal Cameraa");
 
+            posCamera.depth = Camera.main.depth - 2; // first
+            posCamera.targetTexture = rtWorldPos;
+
+            posToNormalCamera.depth = Camera.main.depth - 1; // second
+            posToNormalCamera.targetTexture = rtWorldNormal;
+
+            // init mesh
             batchedMesh = new Mesh();
             infoMap = new Dictionary<GameObject, TraceInfo>();
             verts = new List<Vector3>();
@@ -63,20 +73,43 @@ namespace IndentSurface
                 uvs.Add(new Vector2(1, 0));
             }
 
-            SSH2N.SetTexture("_MainTex", heightMap);
-            SSH.SetTexture("_MainTex", stampTexture);
+            // init material
+            SSP2N.SetTexture("_SSP", rtWorldPos);
+            SSP.SetTexture("_StampTex", stampTexture);
         }
 
         void Update()
         {
-            SSH2N.SetMatrix("_Clip2World",
-                (heightCamera.projectionMatrix
-                * heightCamera.worldToCameraMatrix).inverse);
-            
+            UpdateCamera(posCamera);
+            UpdateCamera(posToNormalCamera);
+
             UpdateMesh();
             
-            Graphics.DrawMesh(batchedMesh, Matrix4x4.identity, SSH, LayerMask.NameToLayer("snowMesh"), heightCamera);
-            Graphics.DrawMesh(batchedMesh, Matrix4x4.identity, SSH2N, LayerMask.NameToLayer("snowMesh"), heightToNormalCamera);
+            Graphics.DrawMesh(batchedMesh, Matrix4x4.identity, SSP, LayerMask.NameToLayer("snowMesh"), posCamera);
+            Graphics.DrawMesh(batchedMesh, Matrix4x4.identity, SSP2N, LayerMask.NameToLayer("snowMesh"), posToNormalCamera);
+        }
+
+        private void UpdateCamera(Camera camera)
+        {
+            camera.transform.position = Camera.main.transform.position;
+            camera.transform.rotation = Camera.main.transform.rotation;
+            camera.fieldOfView = Camera.main.fieldOfView;
+            camera.nearClipPlane = Camera.main.nearClipPlane;
+            camera.farClipPlane = Camera.main.farClipPlane;
+            camera.aspect = Camera.main.aspect;
+        }
+
+        private Camera GenCamera(string name)
+        {
+            var obj = new GameObject(name);
+            var camera = obj.AddComponent(typeof(Camera)) as Camera;
+
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color(1, 1, 1, 0);
+
+            camera.cullingMask = LayerMask.GetMask("snowMesh");
+
+            return camera;
         }
         
         private void UpdateMesh()

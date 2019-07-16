@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SnowMat
-  m_Shader: {fileID: 4800000, guid: 936879352dce8ab40b60a12c4daaf01f, type: 3}
+  m_Shader: {fileID: 4800000, guid: 4397922571b8ad345a07adc722a388fe, type: 3}
   m_ShaderKeywords: _EMISSION _METALLICGLOSSMAP _NORMALMAP _PARALLAXMAP _SPECGLOSSMAP
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
@@ -61,6 +61,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
         m_Texture: {fileID: 2800000, guid: 151a4187ab36776419384dbbce5d80dd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SSN:
+        m_Texture: {fileID: 8400000, guid: c245d66d81fe65e4c98579a16b36f605, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:

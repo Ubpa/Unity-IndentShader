@@ -41,8 +41,7 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
-                float3 normal = UnpackNormal(tex2D(_MainTex, i.uv)).rgb;
-                return fixed4((normal+1)/2, 1);
+                return tex2D(_MainTex, i.uv);
             }
             ENDCG
         }

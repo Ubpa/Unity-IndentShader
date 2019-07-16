@@ -16,13 +16,14 @@ namespace Wacki.IndentSurface
 
         public RenderTexture heightMap;
         public RenderTexture normalMap;
-        public Material heightToNormal;
         private RenderTexture auxTexture;
 
+        public Material heightToNormal;
+        public Material SSH2N;
         public Material moveHeight;
         public Material drawIndent;
         public Material drawLineIndent;
-        public Material drawMeshIndent;
+        public Material drawMeshNormalIndent;
 
         // mouse debug draw
         private Vector3 _prevMousePosition;
@@ -30,7 +31,8 @@ namespace Wacki.IndentSurface
 
         private Vector2 xzPos;
 
-        public GameObject indentCam;
+        public GameObject hCam;
+        public GameObject h2nCam;
 
         public GameObject[] actors;
         struct TraceInfo
@@ -40,6 +42,7 @@ namespace Wacki.IndentSurface
         }
         private Dictionary<GameObject, TraceInfo> infoMap;
         private List<Vector3> verts;
+        private List<Vector3> normals;
         private List<Vector2> uvs;
         private List<int> idxs;
         private Mesh batchedMesh;
@@ -53,15 +56,16 @@ namespace Wacki.IndentSurface
 
             xzPos.Set(float.MaxValue, float.MaxValue);
 
-            if(indentCam != null)
+            if(hCam != null)
             {
-                indentCam.GetComponent<Camera>().targetTexture = heightMap;
-                indentCam.transform.rotation = Quaternion.LookRotation(new Vector3(0, -1, 0));
+                hCam.GetComponent<Camera>().targetTexture = heightMap;
+                //hCam.transform.rotation = Quaternion.LookRotation(new Vector3(0, -1, 0));
             }
 
             batchedMesh = new Mesh();
             infoMap = new Dictionary<GameObject, TraceInfo>();
             verts = new List<Vector3>();
+            normals = new List<Vector3>();
             uvs = new List<Vector2>();
             idxs = new List<int>();
 
@@ -78,29 +82,41 @@ namespace Wacki.IndentSurface
                 Vector3 rightDir = new Vector3(1, 0, 0);
                 verts.Add(pos - stampSize / 2 * rightDir);
                 verts.Add(pos + stampSize / 2 * rightDir);
+                normals.Add(new Vector3(0, 1, 0));
+                normals.Add(new Vector3(0, 1, 0));
                 uvs.Add(new Vector2(0, 0));
                 uvs.Add(new Vector2(1, 0));
             }
 
-            indentCam.GetComponent<CamPostRender>().AddTask((RenderTexture rst) =>
-            {
-                Graphics.Blit(rst, normalMap, heightToNormal);
-            });
+            SSH2N.SetTexture("_MainTex", heightMap);
+            drawMeshNormalIndent.SetTexture("_MainTex", stampTexture);
+
+            //hCam.GetComponent<CamPostRender>().AddTask((RenderTexture rst) =>
+            //{
+            //    //Graphics.Blit(rst, normalMap, heightToNormal);
+            //    Graphics.Blit(rst, normalMap, SSH2N);
+            //});
         }
 
         void Update()
         {
-            indentCam.GetComponent<Camera>().projectionMatrix = Matrix4x4.Ortho(-width / 2, width / 2, -height / 2, height / 2, 0.1f, 30.0f);
+            //hCam.GetComponent<Camera>().projectionMatrix = Matrix4x4.Ortho(-width / 2, width / 2, -height / 2, height / 2, 0.1f, 30.0f);
             GetComponent<MeshRenderer>().material.SetVector("_IndentNormalMapOffset",
-                new Vector4(indentCam.transform.position.x, indentCam.transform.position.z, width, height));
+                new Vector4(hCam.transform.position.x, hCam.transform.position.z, width, height));
             heightToNormal.SetFloat("_Width", rtWidth);
             heightToNormal.SetFloat("_Height", rtHeight);
 
-            UpdateCameraPos();
+            SSH2N.SetMatrix("_Clip2World",
+                (hCam.GetComponent<Camera>().projectionMatrix
+                * hCam.GetComponent<Camera>().worldToCameraMatrix).inverse);
+
+            //UpdateCameraPos();
             UpdateMesh();
 
-            Graphics.DrawMesh(batchedMesh, Matrix4x4.identity, drawMeshIndent, LayerMask.NameToLayer("snowMesh"), indentCam.GetComponent<Camera>());
-        } 
+            // clear texture
+            Graphics.DrawMesh(batchedMesh, Matrix4x4.identity, drawMeshNormalIndent, LayerMask.NameToLayer("snowMesh"), hCam.GetComponent<Camera>());
+            Graphics.DrawMesh(batchedMesh, Matrix4x4.identity, SSH2N, LayerMask.NameToLayer("snowMesh"), h2nCam.GetComponent<Camera>());
+        }
 
         private void DrawByMouse()
         {
@@ -265,7 +281,7 @@ namespace Wacki.IndentSurface
             drawLineIndent.SetTexture("_MainTex", stampTexture);
             drawLineIndent.SetTexture("_SurfaceTex", auxTexture);
             Debug.Log(LayerMask.NameToLayer("snowMesh"));
-            Graphics.DrawMesh(mesh, Matrix4x4.identity, drawMeshIndent, LayerMask.NameToLayer("snowMesh"), indentCam.GetComponent<Camera>());
+            Graphics.DrawMesh(mesh, Matrix4x4.identity, drawMeshNormalIndent, LayerMask.NameToLayer("snowMesh"), hCam.GetComponent<Camera>());
         }
 
         public void MoveHeightMap(Vector3 pos)
@@ -278,8 +294,8 @@ namespace Wacki.IndentSurface
             GetComponent<MeshRenderer>().material.SetVector("_IndentNormalMapOffset", new Vector4(cur_xzPos[0], cur_xzPos[1], width, height));
 
             xzPos = cur_xzPos;
-            if(indentCam != null)
-                indentCam.transform.position = pos + new Vector3(0, 10, 0);
+            if(hCam != null)
+                hCam.transform.position = pos + new Vector3(0, 10, 0);
 
             Vector2 uvOffset = new Vector2(delta.x / width, delta.y / height);
             moveHeight.SetFloat("_uOffset", uvOffset.x);
@@ -303,9 +319,9 @@ namespace Wacki.IndentSurface
 
             pos /= actors.Length;
             Vector3 newCamPos = new Vector3(pos.x, maxY + 1,pos.z);
-            if (Vector3.Distance(indentCam.transform.position, newCamPos) < 0.1 * Mathf.Sqrt(width * height))
+            if (Vector3.Distance(hCam.transform.position, newCamPos) < 0.1 * Mathf.Sqrt(width * height))
                 return;
-            indentCam.transform.position = newCamPos;
+            hCam.transform.position = newCamPos;
 
             GetComponent<MeshRenderer>().material.SetVector("_IndentNormalMapOffset",
                 new Vector4(newCamPos.x, newCamPos.z, width, height));
@@ -334,6 +350,9 @@ namespace Wacki.IndentSurface
                 uvs.Add(new Vector2(0, 0.5f));
                 uvs.Add(new Vector2(1, 0.5f));
 
+                normals.Add(normal);
+                normals.Add(normal);
+
                 // 2  3
                 // 0  1
                 int[] newIdxs = {
@@ -349,6 +368,7 @@ namespace Wacki.IndentSurface
             }
 
             batchedMesh.SetVertices(verts);
+            batchedMesh.SetNormals(normals);
             batchedMesh.SetUVs(0, uvs);
             batchedMesh.SetIndices(idxs.ToArray(), MeshTopology.Triangles, 0);
         }

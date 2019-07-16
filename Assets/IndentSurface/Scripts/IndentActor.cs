@@ -26,9 +26,9 @@ namespace Wacki.IndentSurface
         {
             float v = speed * Input.GetAxis("Vertical");
             float h = speed * Input.GetAxis("Horizontal");
-            var F = transform.forward * v +transform.right * h;
-
-            GetComponent<Rigidbody>().AddForce(F);
+            //var F = transform.forward * v +transform.right * h;
+            GetComponent<Rigidbody>().AddForce(h, 0, v);
+            //GetComponent<Rigidbody>().AddForce(F);
         }
     }
 

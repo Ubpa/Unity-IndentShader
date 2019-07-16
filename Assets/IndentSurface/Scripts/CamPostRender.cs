@@ -4,7 +4,23 @@ using UnityEngine;
 
 public class CamPostRender : MonoBehaviour
 {
-    private List<System.Action<RenderTexture>> useRstActions;
+    public Camera mainCam;
+    private List<System.Action<RenderTexture>> useRstActions = new List<System.Action<RenderTexture>>();
+
+    private void Awake()
+    {
+        GetComponent<Camera>().depthTextureMode |= DepthTextureMode.Depth;
+    }
+
+    private void Update()
+    {
+        transform.position = mainCam.transform.position;
+        transform.rotation = mainCam.transform.rotation;
+        GetComponent<Camera>().fieldOfView = mainCam.fieldOfView;
+        GetComponent<Camera>().nearClipPlane = mainCam.nearClipPlane;
+        GetComponent<Camera>().farClipPlane = mainCam.farClipPlane;
+    }
+
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         foreach (var action in useRstActions)
@@ -16,9 +32,6 @@ public class CamPostRender : MonoBehaviour
 
     public void AddTask(System.Action<RenderTexture> action)
     {
-        if (useRstActions == null)
-            useRstActions = new List<System.Action<RenderTexture>>();
-
         useRstActions.Add(action);
     }
 }

@@ -82,7 +82,8 @@
 					
 					fixed4 val = tex2D(_SSN, screenPos);
 					fixed3 worldNormal;
-					if (val.w == 0)
+					// 由于 Bilinear Filter，invalid texel 的 w 小于 1
+					if (val.w < 1)
 						worldNormal = normalize(IN.worldNormal);
 					else
 						worldNormal = 2 * val.xyz - 1; // decode

@@ -64,22 +64,21 @@
 				float4  b = tex2D(_MainTex, screenPos         - up);
 				float4 rb = tex2D(_MainTex, screenPos + right - up);
 
-				if (lt.a == 0 ||
-					t.a == 0 ||
-					rt.a == 0 ||
-					l.a == 0 ||
-					r.a == 0 ||
-					lb.a == 0 ||
-					b.a == 0 ||
-					rb.a == 0)
+				// 由于 Bilinear Filter，invalid texel 的 w 小于 1
+				if (lt.a < 1 ||
+					t.a < 1 ||
+					rt.a < 1 ||
+					l.a < 1 ||
+					r.a < 1 ||
+					lb.a < 1 ||
+					b.a < 1 ||
+					rb.a < 1)
 					discard;
 
 				// Sobel
 				float3 dx = (lt + l * 2.0 + lb) - (rt + r * 2.0 + rb);
 				float3 dz = (lt + t * 2.0 + rt) - (lb + b * 2.0 + rb);
 
-				//fixed3 encodedNormal = (normalize(cross(dx, dz)) + 1) / 2;
-				//return fixed4(encodedNormal, 1); // 1 : valid, 0 : not valid
 				return float4((normalize(cross(dx, dz)) + 1) / 2, 1);
             }
             ENDCG

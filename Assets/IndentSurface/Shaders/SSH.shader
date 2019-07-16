@@ -1,4 +1,4 @@
-﻿Shader "IndentSurface/DrawMeshNormalIndent" {
+﻿Shader "IndentSurface/SSH" {
 
 	Properties{
 		_Scale("Scale", Range(0, 2)) = 1
